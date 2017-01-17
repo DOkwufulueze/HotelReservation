@@ -3,6 +3,7 @@
 class Reservation:
 
   def __init__(self, params = {}):
+    # reservation parameters
     self.params = {
       'Reference Number': params['Reference Number'],
       'Customer Name': params['Customer Name'],
@@ -13,7 +14,8 @@ class Reservation:
       'Room Type': params['Room Type'],
       'Number of people': params['Number of people'],
       'Price': params['Price']
-    }    
+    }
 
+  # The CSV Header columns and keys for reservation
   def get_field_names(self):
     return ['Reference Number', 'Customer Name', 'Check-in-date', 'Check-out-date', 'Status', 'Room Reference Number', 'Room Type', 'Number of people', 'Price']

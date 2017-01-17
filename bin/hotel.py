@@ -9,15 +9,19 @@ import time
 import os.path
 
 class Hotel:
+  # maintain class dictionary for both reservations and rooms
   dictionary = {
     'reservations': {},
     'rooms': {}
   }
+
+  # to track whether class reservation and class room dictionaries have been populated by the contents of their respective CSV's
   are_hash_objects_loaded = {
     'reservations': False,
     'rooms': False
   }
 
+  # get the maximum reference number so the next reference number can be a single increment for uniqueness sake
   def get_max_reference_number(self, for_name):
     max_reference_number = max(self.dictionary[for_name]) if len(self.dictionary[for_name]) > 0 else 0
     return max_reference_number
@@ -25,10 +29,13 @@ class Hotel:
   def go_back_to_menu(self):
     self.welcome()
 
+  # ensure that date entries are valid (dd/mm/yyyy or d/m/yyyy)
   def validate_date(self, stringObject):
     return re.match(r'\d{1,2}/\d{1,2}/\d{4}', stringObject)
 
+  #starting method: entry point
   def welcome(self):
+    # load class dictionary objects (reservations and rooms) if they aren't loaded already
     if not(self.are_hash_objects_loaded['reservations']): self.load_hash_object('reservations', 'Reference Number')
     if not(self.are_hash_objects_loaded['rooms']): self.load_hash_object('rooms', 'Room Reference Number')
     print ("\n================================================================================\n")
@@ -37,6 +44,7 @@ class Hotel:
     choice = input ("1: Add a reservation\n2: Modify existing reservation\n3: Delete reservation\n4: View all reservation records in the system\n5: Save current records (Reservations and Rooms) to files\n6: Load all reservation records from a saved file\n7: View all reservation records of all the amounts made\n================================================================================\na: Add Room\nb: Modify Existing Room\nc: View all room records in the system\nd: Delete Room\ne: Load all rooms from a saved file\nf: View Available Rooms\n8: Go back to menu\n9: Exit application\n================================================================================\n\n")
     self.decision(choice)
 
+  # keep using application or exit application
   def continue_or_stop(self):
     choice = input ('\n\nEnter 8 to continue, 9 to exit application:\n')
     if choice == '8':
@@ -47,6 +55,7 @@ class Hotel:
     else:
       self.go_back_to_menu()
 
+  # generic update method for any value
   def update_value(self, input_prompt, old_value):
     input_value = input(input_prompt)
     if input_value.strip() == '':
@@ -116,23 +125,26 @@ class Hotel:
 
     self.continue_or_stop()
 
+  # get a single row of either reservation or room
   def rowDictionary(self, for_name, record):
     if for_name == 'reservations':
       return { 'Reference Number': record, 'Customer Name': self.dictionary['reservations'][record]['Customer Name'], 'Check-in-date': self.dictionary['reservations'][record]['Check-in-date'], 'Check-out-date': self.dictionary['reservations'][record]['Check-out-date'], 'Status': self.dictionary['reservations'][record]['Status'], 'Room Reference Number': self.dictionary['reservations'][record]['Room Reference Number'], 'Room Type': self.dictionary['reservations'][record]['Room Type'], 'Number of people': self.dictionary['reservations'][record]['Number of people'], 'Price': self.dictionary['reservations'][record]['Price'] } 
     else:
       return { 'Room Reference Number': record, 'Room Type': self.dictionary['rooms'][record]['Room Type'], 'Price': self.dictionary['rooms'][record]['Price'], 'Available': self.dictionary['rooms'][record]['Available'] }
 
+  # load class dictionaries (reservations and rooms)
   def load_hash_object(self, csv_file_name, reference_title):
-    if os.path.isfile('../csv/'+ csv_file_name + '.csv'):
+    if os.path.isfile('../csv/'+ csv_file_name + '.csv'): # CSV file exists
       with open('../csv/'+ csv_file_name +'.csv') as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
           self.dictionary[csv_file_name][int(row[reference_title])] = row
-    else:
+    else: # CSV file does not exist: the application is running for the first time, so create the CSV
       open('../csv/'+ csv_file_name +'.csv', 'a+')
 
     self.are_hash_objects_loaded[csv_file_name] = True
 
+  # display CSV file contents (reservations or rooms) given a particular CSV file named csv_file_name
   def load_records_from_file(self, csv_file_name):
     count = 0
     with open('../csv/' + csv_file_name + '.csv') as csv_file:
@@ -186,6 +198,7 @@ class Hotel:
 
     self.continue_or_stop()
 
+  # make a choice of which action to perform
   def decision(self, choice):
     if choice == '1':
       self.add_reservation()
@@ -223,11 +236,11 @@ class Hotel:
 
   def add_reservation(self):
     room_reference_number = input('Enter room reference number: ')
-    if room_reference_number:
-      if int(room_reference_number) in self.dictionary['rooms']:
-        if not (self.dictionary['rooms'][int(room_reference_number)]['Available'] == '1'):
+    if room_reference_number: # if room reference number isn't empty
+      if int(room_reference_number) in self.dictionary['rooms']: # if the room exists
+        if not (self.dictionary['rooms'][int(room_reference_number)]['Available'] == '1'): # if the room is not available
           print ('\n================================================================================\nRoom ' + room_reference_number + ' (' + self.dictionary['rooms'][int(room_reference_number)]['Room Type'] + ') is not Available')
-        else:
+        else: # room is available
           customer_name = input('Enter customer name: ')
           check_in_date = input('Enter check-in-date (d/m/yyyy or dd/mm/yyyy): ')
           check_out_date = input('Enter check-out-date (d/m/yyyy or dd/mm/yyyy): ')
@@ -235,7 +248,7 @@ class Hotel:
           number_of_people = input('Enter number of people in a room: ')
           price = self.dictionary['rooms'][int(room_reference_number)]['Price']
           room_type = self.dictionary['rooms'][int(room_reference_number)]['Room Type']
-          if self.validate_date(check_in_date) and self.validate_date(check_out_date):
+          if self.validate_date(check_in_date) and self.validate_date(check_out_date): # if date is valid
             check_in = time.strptime(check_in_date, "%d/%m/%Y")
             check_out = time.strptime(check_out_date, "%d/%m/%Y")
             params = {
